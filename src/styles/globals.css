@@ -1,0 +1,120 @@
+@import "tailwindcss";
+
+/**
+ * Electric Circuit (§5). Tailwind v4 is CSS-first — these tokens are the whole theme config,
+ * there is no tailwind.config.ts.
+ */
+@theme {
+  --color-shocking-blue: #0a5cff;
+  --color-shocking-blue-glow: #4fa3ff;
+  --color-electric-pulse: #7fd1ff;
+  --color-broken-white: #edebe4;
+  --color-broken-black: #121214;
+  --color-error-red: #ff4d4d;
+
+  --font-display: var(--font-bokor), ui-serif, serif;
+  --font-body: var(--font-serif-body), Georgia, serif;
+
+  /* §5.2 sharp edges are a hard rule, so the radius scale is removed outright —
+     `rounded-*` utilities do not exist in this project. */
+  --radius-*: initial;
+}
+
+@layer base {
+  *,
+  *::before,
+  *::after {
+    border-radius: 0;
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background-color: var(--color-shocking-blue);
+    color: var(--color-broken-white);
+    font-family: var(--font-body);
+    font-variant-numeric: tabular-nums lining-nums;
+    /* The 8×8 board is dense; PC + tablet only (§10), so never rubber-band the layout. */
+    overscroll-behavior: none;
+  }
+
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-display);
+    font-weight: 400;
+    letter-spacing: 0.01em;
+  }
+
+  :focus-visible {
+    outline: 3px solid var(--color-broken-black);
+    outline-offset: 2px;
+  }
+}
+
+@layer components {
+  /* Broken-white fill + broken-black outline: the only card recipe in the game (§5.1). */
+  .card {
+    background-color: var(--color-broken-white);
+    color: var(--color-broken-black);
+    border: 2px solid var(--color-broken-black);
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.625rem 1.25rem;
+    background-color: var(--color-broken-white);
+    color: var(--color-broken-black);
+    border: 2px solid var(--color-broken-black);
+    font-family: var(--font-body);
+    font-size: 0.875rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background-color 120ms linear, color 120ms linear;
+  }
+
+  .btn:hover:not(:disabled) {
+    background-color: var(--color-shocking-blue-glow);
+  }
+
+  .btn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+
+  .btn-ghost {
+    background-color: transparent;
+    color: var(--color-broken-white);
+    border-color: var(--color-broken-white);
+  }
+
+  .btn-ghost:hover:not(:disabled) {
+    background-color: var(--color-broken-white);
+    color: var(--color-broken-black);
+  }
+
+  .rule {
+    border-top: 1px solid var(--color-broken-black);
+  }
+
+  .label {
+    font-size: 0.6875rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
