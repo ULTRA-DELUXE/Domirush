@@ -29,9 +29,9 @@ export function DominoTray({
       aria-label="Tile tray"
       // Sits above the board's stacking context so a tile dragged out of the tray reads as
       // lifted over the grid rather than sliding underneath it (§2.2).
-      className="relative z-50 border-2 border-broken-black bg-broken-white/10 p-3"
+      className="relative z-50 border-2 border-cream bg-cream/10 p-3"
     >
-      <div className="mb-2 flex items-baseline justify-between text-broken-white">
+      <div className="mb-2 flex items-baseline justify-between text-cream">
         <h2 className="label">Tray</h2>
         <span className="label opacity-70">{tiles.length} tiles</span>
       </div>

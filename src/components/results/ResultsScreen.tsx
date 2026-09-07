@@ -107,7 +107,7 @@ export function ResultsScreen() {
           {results.puzzleTimesMs.map((time, index) => (
             <li
               key={index}
-              className="split-row flex items-center justify-between border-t border-broken-black py-2 first:border-t-0"
+              className="split-row flex items-center justify-between border-t border-navy py-2 first:border-t-0"
             >
               <span className="label opacity-70">Puzzle {index + 1}</span>
               <span className="text-lg">{formatDuration(time)}</span>
@@ -125,7 +125,7 @@ export function ResultsScreen() {
             {entries.map((entry, index) => (
               <li
                 key={entry.id}
-                className="flex items-center justify-between border-t border-broken-black py-2 first:border-t-0"
+                className="flex items-center justify-between border-t border-navy py-2 first:border-t-0"
               >
                 <span className="text-base">
                   {index + 1}. {entry.playerName}

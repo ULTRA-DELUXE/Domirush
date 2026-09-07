@@ -23,13 +23,13 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#0a5cff",
+  themeColor: "#1c4286",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={`${bokor.variable} ${sourceSerif.variable}`}>
-      <body className="min-h-dvh bg-shocking-blue text-broken-white antialiased">{children}</body>
+      <body className="min-h-dvh bg-navy text-cream antialiased">{children}</body>
     </html>
   );
 }

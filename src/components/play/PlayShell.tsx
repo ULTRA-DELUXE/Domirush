@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef } from "react";
 import {
+  COLOR,
   animateChainTrace,
   animateTileReject,
   gsap,
@@ -101,8 +102,8 @@ export function PlayShell({ mode, flow }: PlayShellProps) {
         x: cell.col * metrics.cellSize,
         y: cell.row * metrics.cellSize,
         rotation: state.selectionRotation,
-        borderColor: check.ok ? "#121214" : "#ff4d4d",
-        backgroundColor: check.ok ? "rgba(127,209,255,0.45)" : "rgba(255,77,77,0.35)",
+        borderColor: check.ok ? COLOR.gold : COLOR.cream,
+        backgroundColor: check.ok ? COLOR.goldFill : COLOR.creamFill,
       });
     },
     [],
@@ -304,7 +305,7 @@ export function PlayShell({ mode, flow }: PlayShellProps) {
 
             {hint && (
               <div
-                className="pointer-events-none absolute border-2 border-dashed border-electric-pulse"
+                className="pointer-events-none absolute border-2 border-dashed border-gold"
                 style={{
                   left: `${(hint.cellA.col / GRID_SIZE) * 100}%`,
                   top: `${(hint.cellA.row / GRID_SIZE) * 100}%`,
@@ -357,7 +358,7 @@ function PlayControls({
   const placedCount = useGameStore((state) => state.placed.length);
 
   return (
-    <aside className="flex flex-col gap-3 border-2 border-broken-black bg-broken-white/10 p-4">
+    <aside className="flex flex-col gap-3 border-2 border-cream bg-cream/10 p-4">
       <h2 className="label opacity-70">Controls</h2>
 
       {/* On-screen rotate is the tablet equivalent of the physical R key (§10). */}

@@ -124,15 +124,14 @@ export function DominoTile({
       className={cn(
         "block touch-none",
         !onBoard && "h-12 w-24 shrink-0",
-        isSelected && "ring-4 ring-broken-black",
-        isHinted && "ring-4 ring-electric-pulse",
+        isSelected && "ring-4 ring-navy",
+        isHinted && "ring-4 ring-gold",
         disabled ? "cursor-default" : "cursor-grab active:cursor-grabbing",
       )}
       style={positionStyle}
     >
-      {/* Chain membership reads as a glow, not another outline — broken-black stays the only
-          outline colour in the game (§5.1, §5.2). */}
-      <DominoFace tile={tile} className={cn(isInChain && "shadow-[0_0_0_3px_#7fd1ff]")} />
+      {/* Chain membership reads as a gold glow, not another outline — navy stays the ink. */}
+      <DominoFace tile={tile} className={cn(isInChain && "shadow-[0_0_0_3px_#e2b540]")} />
     </button>
   );
 }

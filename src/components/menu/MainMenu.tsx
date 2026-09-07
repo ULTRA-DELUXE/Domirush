@@ -86,7 +86,7 @@ export function MainMenu() {
       )}
 
       {startError && (
-        <p role="alert" className="menu-reveal card border-error-red p-4 text-error-red">
+        <p role="alert" className="menu-reveal card border-gold p-4 text-navy">
           {startError}
         </p>
       )}
@@ -131,7 +131,7 @@ export function MainMenu() {
             <label className="flex items-center gap-3 text-base">
               <input
                 type="checkbox"
-                className="h-5 w-5 accent-shocking-blue"
+                className="h-5 w-5 accent-gold"
                 checked={settings.autoCheck}
                 onChange={(event) => updateSetting({ autoCheck: event.target.checked })}
               />
@@ -142,7 +142,7 @@ export function MainMenu() {
               <span className="label opacity-70">Name</span>
               <input
                 type="text"
-                className="border-2 border-broken-black bg-transparent px-3 py-1"
+                className="border-2 border-navy bg-transparent px-3 py-1"
                 value={settings.playerName}
                 maxLength={16}
                 onChange={(event) => updateSetting({ playerName: event.target.value })}

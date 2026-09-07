@@ -24,9 +24,9 @@ export function StreakProgress({ position, total }: StreakProgressProps) {
             <span
               key={index}
               className={cn(
-                "h-3 w-3 border border-broken-black",
-                index < position - 1 && "bg-broken-white",
-                index === position - 1 && "bg-electric-pulse",
+                "h-3 w-3 border border-cream",
+                index < position - 1 && "bg-cream",
+                index === position - 1 && "bg-gold",
                 index > position - 1 && "bg-transparent",
               )}
             />
