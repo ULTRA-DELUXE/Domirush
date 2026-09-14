@@ -23,12 +23,14 @@ export const EASE = {
   linear: "none",
 } as const;
 
+/** Navy, cream, gold — the only hues in the game. Opacity is allowed; extra hexes are not. */
 export const COLOR = {
-  shockingBlue: "#0a5cff",
-  electricPulse: "#7fd1ff",
-  brokenWhite: "#edebe4",
-  brokenBlack: "#121214",
-  errorRed: "#ff4d4d",
+  navy: "#1c4286",
+  cream: "#ebd3a2",
+  gold: "#e2b540",
+  navyShadow: "rgba(28, 66, 134, 0.45)",
+  goldFill: "rgba(226, 181, 64, 0.45)",
+  creamFill: "rgba(235, 211, 162, 0.28)",
 } as const;
 
 export const Z_INDEX = {

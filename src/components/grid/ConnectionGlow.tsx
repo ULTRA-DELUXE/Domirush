@@ -49,20 +49,20 @@ function JunctionMark({ junction }: { junction: Junction }) {
         ref={pulseRef}
         className={cn(
           "absolute h-1/2 w-1/2",
-          junction.match ? "bg-electric-pulse" : "bg-error-red",
+          junction.match ? "bg-gold" : "bg-cream",
         )}
       />
       <span
         className={cn(
-          "absolute h-[14%] w-[14%] border border-broken-black",
-          junction.match ? "bg-electric-pulse" : "bg-error-red",
+          "absolute h-[14%] w-[14%] border border-navy",
+          junction.match ? "bg-gold" : "bg-cream",
         )}
       />
     </span>
   );
 }
 
-/** Live junction feedback: matches pulse electric blue, mismatches flag red without blocking. */
+/** Live junction feedback: matches pulse gold, mismatches flag cream without blocking. */
 export function ConnectionGlow({ junctions }: { junctions: Junction[] }) {
   return (
     <>

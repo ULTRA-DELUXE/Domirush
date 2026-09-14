@@ -19,7 +19,7 @@ const CELLS: Cell[] = Array.from({ length: GRID_SIZE * GRID_SIZE }, (_, index) =
 }));
 
 /**
- * The 8×8 board: shocking-blue field, broken-black rules, broken-white markers and tiles (§5.5).
+ * The 8×8 board: navy field, cream rules, cream markers and tiles.
  * Children (placed tiles, drag ghost, junction glows) are positioned in percentages so the whole
  * board scales with its container.
  */
@@ -30,7 +30,7 @@ export const Grid = forwardRef<HTMLDivElement, GridProps>(function Grid(
   return (
     <div
       ref={ref}
-      className="relative z-10 aspect-square w-full border-2 border-broken-black bg-shocking-blue"
+      className="relative z-10 h-full w-full border border-cream bg-navy"
     >
       <div className="absolute inset-0 grid grid-cols-8 grid-rows-8">
         {CELLS.map((cell) => (

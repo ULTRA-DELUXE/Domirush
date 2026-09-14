@@ -42,6 +42,7 @@ export interface GameState {
   clearBoard: () => void;
   selectTile: (tileId: string | null) => void;
   rotateSelection: () => void;
+  setSelectionRotation: (rotation: Rotation) => void;
   setCursor: (cell: Cell) => void;
   moveCursor: (rowDelta: number, colDelta: number) => void;
   placeTile: (tileId: string, anchor: Cell, rotation: Rotation) => boolean;
@@ -94,6 +95,8 @@ export const useGameStore = create<GameState>((set, get) => ({
 
   rotateSelection: () => set((state) => ({ selectionRotation: rotateClockwise(state.selectionRotation) })),
 
+  setSelectionRotation: (rotation) => set({ selectionRotation: rotation }),
+
   setCursor: (cell) => set({ cursor: clampCell(cell) }),
 
   moveCursor: (rowDelta, colDelta) =>
@@ -122,6 +125,7 @@ export const useGameStore = create<GameState>((set, get) => ({
     set({
       placed: [...withoutTile, { tileId, cellA: check.cellA, cellB: check.cellB, rotation }],
       selectedTileId: null,
+      selectionRotation: rotation,
       lastPlacedTileId: tileId,
       lastRejection: null,
       hint: null,

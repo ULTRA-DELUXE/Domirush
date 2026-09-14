@@ -50,12 +50,17 @@ export function ResultsScreen() {
 
   if (hydrated && !results) {
     return (
-      <main className="mx-auto flex min-h-dvh max-w-3xl flex-col items-start justify-center gap-6 p-8">
-        <h1 className="font-display text-5xl">No results yet</h1>
-        <p className="text-lg opacity-90">Finish a run and your splits will show up here.</p>
-        <button type="button" className="btn" onClick={() => router.push("/")}>
-          Back to menu
-        </button>
+      <main className="frame-page status-page">
+        <section className="status-title-band band-pad">
+          <p className="label opacity-55">03 / Results</p>
+          <h1 className="display uppercase">No results yet</h1>
+        </section>
+        <section className="status-body-band band-pad">
+          <p className="kicker">Finish a run and your splits will show up here.</p>
+          <button type="button" className="btn mt-6" onClick={() => router.push("/")}>
+            Back to menu
+          </button>
+        </section>
       </main>
     );
   }
@@ -71,89 +76,94 @@ export function ResultsScreen() {
   };
 
   return (
-    <main ref={rootRef} className="mx-auto flex w-full max-w-4xl flex-col gap-8 p-6 lg:p-12">
-      <section className="results-reveal">
-        <p className="label opacity-70">{mode?.label ?? results.modeId} complete</p>
-        {rank && (
-          <>
-            <h1 ref={rankRef} className="font-display text-6xl leading-none lg:text-8xl">
-              {rank.name}
-            </h1>
-            <p className="mt-3 text-lg opacity-90">{rank.blurb}</p>
-          </>
-        )}
-      </section>
-
-      <section className="results-reveal card grid gap-6 p-6 sm:grid-cols-3">
-        <div>
-          <p className="label opacity-70">Total</p>
-          <p className="font-display text-4xl leading-none">
-            {formatDuration(results.totalTimeMs)}
-          </p>
+    <main ref={rootRef} className="frame-page results-page">
+      <section className="results-title-band results-title-band--split results-reveal">
+        <div className="band-pad flex min-h-0 flex-col justify-between">
+          <p className="label opacity-55">03 / {mode?.label ?? results.modeId}</p>
+          <div>
+            {rank && (
+              <>
+                <h1 ref={rankRef} className="display">
+                  {rank.name}
+                </h1>
+                <p className="kicker mt-3">{rank.blurb}</p>
+              </>
+            )}
+          </div>
         </div>
-        <div>
-          <p className="label opacity-70">Fastest puzzle</p>
-          <p className="text-2xl">{formatDuration(results.fastestPuzzleMs ?? 0)}</p>
+        <div className="results-actions band-pad">
+          <button type="button" className="btn" onClick={replay}>
+            Run it again
+          </button>
+          <button
+            type="button"
+            className="btn btn-ghost"
+            onClick={() => {
+              clearResults();
+              router.push("/");
+            }}
+          >
+            Back to menu
+          </button>
         </div>
-        <div>
-          <p className="label opacity-70">Slowest puzzle</p>
-          <p className="text-2xl">{formatDuration(results.slowestPuzzleMs ?? 0)}</p>
-        </div>
       </section>
 
-      <section className="results-reveal card p-6">
-        <h2 className="font-display text-2xl">Splits</h2>
-        <ol className="mt-4 flex flex-col">
-          {results.puzzleTimesMs.map((time, index) => (
-            <li
-              key={index}
-              className="split-row flex items-center justify-between border-t border-broken-black py-2 first:border-t-0"
-            >
-              <span className="label opacity-70">Puzzle {index + 1}</span>
-              <span className="text-lg">{formatDuration(time)}</span>
-            </li>
-          ))}
-        </ol>
-      </section>
+      <div className="results-body results-reveal">
+        <section className="results-stats">
+          <div className="results-stat band-pad">
+            <p className="label opacity-55">Total</p>
+            <p className="display-sm">{formatDuration(results.totalTimeMs)}</p>
+          </div>
+          <div className="results-stat band-pad">
+            <p className="label opacity-55">Fastest</p>
+            <p className="display-sm">{formatDuration(results.fastestPuzzleMs ?? 0)}</p>
+          </div>
+          <div className="results-stat band-pad">
+            <p className="label opacity-55">Slowest</p>
+            <p className="display-sm">{formatDuration(results.slowestPuzzleMs ?? 0)}</p>
+          </div>
+        </section>
 
-      <section className="results-reveal card p-6">
-        <h2 className="font-display text-2xl">Local leaderboard</h2>
-        {entries.length === 0 ? (
-          <p className="mt-3 text-base opacity-80">No runs recorded yet.</p>
-        ) : (
-          <ol className="mt-4 flex flex-col">
-            {entries.map((entry, index) => (
-              <li
-                key={entry.id}
-                className="flex items-center justify-between border-t border-broken-black py-2 first:border-t-0"
-              >
-                <span className="text-base">
-                  {index + 1}. {entry.playerName}
-                  {entry.rankId && (
-                    <span className="ml-2 text-sm opacity-70">{RANKS[entry.rankId].name}</span>
-                  )}
-                </span>
-                <span className="text-lg">{formatDuration(entry.totalTimeMs)}</span>
-              </li>
-            ))}
-          </ol>
-        )}
-      </section>
+        <section className="results-lower">
+          <div className="results-panel band-pad">
+            <h2 className="label opacity-55">Splits</h2>
+            <ol className="results-panel-body mt-3 flex flex-col">
+              {results.puzzleTimesMs.map((time, index) => (
+                <li
+                  key={index}
+                  className="split-row flex items-center justify-between border-t border-navy py-2 first:border-t-0"
+                >
+                  <span className="label opacity-55">Puzzle {index + 1}</span>
+                  <span className="text-lg">{formatDuration(time)}</span>
+                </li>
+              ))}
+            </ol>
+          </div>
 
-      <div className="results-reveal flex flex-wrap gap-3">
-        <button type="button" className="btn" onClick={replay}>
-          Run it again
-        </button>
-        <button
-          type="button"
-          className="btn btn-ghost"
-          onClick={() => {
-            clearResults();
-            router.push("/");
-          }}
-        >
-          Back to menu
-        </button>
+          <div className="results-panel band-pad">
+            <h2 className="label opacity-55">Leaderboard</h2>
+            {entries.length === 0 ? (
+              <p className="mt-3 text-sm opacity-80">No runs recorded yet.</p>
+            ) : (
+              <ol className="results-panel-body mt-3 flex flex-col">
+                {entries.map((entry, index) => (
+                  <li
+                    key={entry.id}
+                    className="flex items-center justify-between border-t border-navy py-2 first:border-t-0"
+                  >
+                    <span className="text-sm">
+                      {index + 1}. {entry.playerName}
+                      {entry.rankId && (
+                        <span className="ml-2 opacity-70">{RANKS[entry.rankId].name}</span>
+                      )}
+                    </span>
+                    <span className="text-lg">{formatDuration(entry.totalTimeMs)}</span>
+                  </li>
+                ))}
+              </ol>
+            )}
+          </div>
+        </section>
       </div>
     </main>
   );

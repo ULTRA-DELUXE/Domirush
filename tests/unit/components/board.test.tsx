@@ -25,23 +25,23 @@ describe("board rendering", () => {
     expect(container.textContent).toContain(String(puzzle.target.value));
   });
 
-  it("keeps the board on the shocking-blue field with broken-black rules", () => {
+  it("keeps the board on the navy field with cream rules", () => {
     const { container } = render(
       <Grid puzzle={puzzle} cursor={{ row: 0, col: 0 }} onCellSelect={vi.fn()} />,
     );
     const board = container.firstElementChild!;
-    expect(board.className).toContain("bg-shocking-blue");
-    expect(board.className).toContain("border-broken-black");
+    expect(board.className).toContain("bg-navy");
+    expect(board.className).toContain("border-cream");
   });
 });
 
 describe("domino face", () => {
-  it("fills broken-white and outlines broken-black, never the reverse", () => {
+  it("fills cream and outlines navy, never the reverse", () => {
     const { container } = render(<DominoFace tile={{ id: "2-5", a: 2, b: 5 }} />);
     const face = container.firstElementChild!;
-    expect(face.className).toContain("bg-broken-white");
-    expect(face.className).toContain("border-broken-black");
-    expect(face.className).not.toContain("bg-broken-black");
+    expect(face.className).toContain("bg-cream");
+    expect(face.className).toContain("border-navy");
+    expect(face.className).not.toContain("bg-navy");
   });
 
   it("draws one square mark per pip across both halves", () => {
@@ -64,8 +64,8 @@ describe("streak progress", () => {
   it("marks completed, current, and upcoming puzzles distinctly", () => {
     const { container } = render(<StreakProgress position={3} total={5} />);
     expect(screen.getByText("3 / 5")).toBeInTheDocument();
-    expect(container.querySelectorAll(".bg-broken-white")).toHaveLength(2);
-    expect(container.querySelectorAll(".bg-electric-pulse")).toHaveLength(1);
+    expect(container.querySelectorAll(".bg-cream")).toHaveLength(2);
+    expect(container.querySelectorAll(".bg-gold")).toHaveLength(1);
     expect(container.querySelectorAll(".bg-transparent")).toHaveLength(2);
   });
 });

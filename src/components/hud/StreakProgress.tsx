@@ -9,24 +9,20 @@ export interface StreakProgressProps {
 
 export function StreakProgress({ position, total }: StreakProgressProps) {
   return (
-    <div className="flex flex-col gap-1">
-      <span className="label opacity-70">Streak</span>
+    <div className="flex min-h-0 min-w-0 flex-col justify-between py-0.5">
+      <span className="label opacity-55">Streak</span>
       <div className="flex items-center gap-3">
-        <span className="text-xl leading-none">
+        <span className="whitespace-nowrap text-xl leading-none">
           {position} / {total}
         </span>
-        <div
-          className="flex gap-1"
-          role="img"
-          aria-label={`Puzzle ${position} of ${total}`}
-        >
+        <div className="flex gap-1" role="img" aria-label={`Puzzle ${position} of ${total}`}>
           {Array.from({ length: total }, (_, index) => (
             <span
               key={index}
               className={cn(
-                "h-3 w-3 border border-broken-black",
-                index < position - 1 && "bg-broken-white",
-                index === position - 1 && "bg-electric-pulse",
+                "h-2.5 w-2.5 border border-cream",
+                index < position - 1 && "bg-cream",
+                index === position - 1 && "bg-gold",
                 index > position - 1 && "bg-transparent",
               )}
             />

@@ -56,20 +56,18 @@ function PlayScreenBody({ modeId }: { modeId: string }) {
   return (
     <>
       <PlayShell mode={mode} flow={flow} />
-      <div className="mx-auto w-full max-w-6xl px-4 pb-8 lg:px-8">
-        <button type="button" className="btn btn-ghost" onClick={flow.abandon}>
-          Abandon run
-        </button>
-      </div>
     </>
   );
 }
 
 function StatusPanel({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <main className="mx-auto flex min-h-dvh max-w-3xl flex-col items-start justify-center gap-2 p-8">
-      <h1 className="font-display text-5xl leading-none">{title}</h1>
-      {children}
+    <main className="frame-page status-page">
+      <section className="status-title-band band-pad">
+        <p className="label opacity-55">02 / Play</p>
+        <h1 className="display uppercase">{title}</h1>
+      </section>
+      <section className="status-body-band band-pad">{children}</section>
     </main>
   );
 }

@@ -25,7 +25,7 @@ function PipHalf({ value }: { value: PipValue }) {
       {Array.from({ length: 9 }, (_, index) => (
         <span
           key={index}
-          className={marks.includes(index) ? "pip bg-broken-black" : ""}
+          className={marks.includes(index) ? "pip bg-navy" : ""}
           aria-hidden="true"
         />
       ))}
@@ -38,17 +38,17 @@ export interface DominoFaceProps {
   className?: string;
 }
 
-/** Broken-white fill, broken-black outline — the only tile recipe (§5.1). */
+/** Cream fill, navy outline — the only tile recipe. */
 export function DominoFace({ tile, className }: DominoFaceProps) {
   return (
     <div
       className={cn(
-        "domino-face flex h-full w-full items-stretch border-2 border-broken-black bg-broken-white",
+        "domino-face flex h-full w-full items-stretch border-2 border-navy bg-cream",
         className,
       )}
     >
       <PipHalf value={tile.a} />
-      <span className="w-[2px] shrink-0 bg-broken-black" aria-hidden="true" />
+      <span className="w-[2px] shrink-0 bg-navy" aria-hidden="true" />
       <PipHalf value={tile.b} />
     </div>
   );

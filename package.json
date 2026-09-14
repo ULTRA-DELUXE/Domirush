@@ -8,10 +8,14 @@
     "start": "next start",
     "lint": "next lint",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "db:apply": "node --env-file=.env.local scripts/apply-leaderboard-schema.mjs",
+    "db:inspect": "node --env-file=.env.local scripts/apply-leaderboard-schema.mjs scripts/inspect-leaderboard.sql",
+    "db:verify": "node --env-file=.env.local scripts/verify-leaderboard.mjs"
   },
   "dependencies": {
     "@gsap/react": "^2.1.2",
+    "@supabase/supabase-js": "^2.116.0",
     "gsap": "^3.13.0",
     "next": "^14.2.32",
     "react": "^18.3.1",

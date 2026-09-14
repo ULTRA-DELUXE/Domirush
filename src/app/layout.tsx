@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Bokor, Source_Serif_4 } from "next/font/google";
+import { AppShell } from "@/components/shell/AppShell";
 import "../styles/globals.css";
 
 // §5.3 — exactly two families: Bokor for display, one serif for everything else.
@@ -23,13 +24,15 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#0a5cff",
+  themeColor: "#1c4286",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={`${bokor.variable} ${sourceSerif.variable}`}>
-      <body className="min-h-dvh bg-shocking-blue text-broken-white antialiased">{children}</body>
+      <body className="bg-navy text-cream antialiased">
+        <AppShell>{children}</AppShell>
+      </body>
     </html>
   );
 }

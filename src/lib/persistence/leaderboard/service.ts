@@ -1,17 +1,18 @@
 import type { GameModeId, SessionResults } from "../../modes/types";
 import { readSettings } from "../localStore";
+import { resolveLeaderboardProvider } from "./index";
 import { localProvider } from "./localProvider";
 import type { LeaderboardEntry, LeaderboardProvider } from "./types";
 
-let activeProvider: LeaderboardProvider = localProvider;
+let override: LeaderboardProvider | null = null;
 
-/** Swapping in the remote provider later is a single call, not a refactor (§6.4). */
-export function setLeaderboardProvider(provider: LeaderboardProvider): void {
-  activeProvider = provider;
+/** Tests / rare overrides. Production uses `resolveLeaderboardProvider()`. */
+export function setLeaderboardProvider(provider: LeaderboardProvider | null): void {
+  override = provider;
 }
 
 export function getLeaderboardProvider(): LeaderboardProvider {
-  return activeProvider;
+  return override ?? resolveLeaderboardProvider();
 }
 
 export async function listLeaderboard(
@@ -19,22 +20,23 @@ export async function listLeaderboard(
   scope?: string,
 ): Promise<LeaderboardEntry[]> {
   try {
-    return await activeProvider.listEntries(modeId, scope);
+    return await getLeaderboardProvider().listEntries(modeId, scope);
   } catch {
     return [];
   }
 }
 
 /**
- * The thin service layer §6.4 asks for: session/results code calls this, never a provider
- * directly, so the store stays provider-agnostic and a failed submit can never break a run.
+ * Thin service layer: session/results never talk to a provider. A failed submit never
+ * blocks the results screen or local personal bests.
  */
 export async function submitRunToLeaderboard(
   results: SessionResults,
   scope?: string,
 ): Promise<boolean> {
+  if (!results.rankId) return false;
   try {
-    await activeProvider.submitEntry({
+    await getLeaderboardProvider().submitEntry({
       playerName: readSettings().playerName || "Player",
       modeId: results.modeId,
       scope,
@@ -46,3 +48,5 @@ export async function submitRunToLeaderboard(
     return false;
   }
 }
+
+export { localProvider };

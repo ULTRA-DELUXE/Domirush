@@ -1,5 +1,5 @@
 import { gsap } from "./gsap";
-import { DURATION, EASE, Z_INDEX, motionDuration } from "./tokens";
+import { COLOR, DURATION, EASE, Z_INDEX, motionDuration } from "./tokens";
 
 type Target = gsap.TweenTarget;
 
@@ -8,7 +8,7 @@ export function animateTilePickup(target: Target) {
   gsap.set(target, { zIndex: Z_INDEX.dragging });
   return gsap.to(target, {
     scale: 1.08,
-    boxShadow: "0 18px 0 -6px rgba(18,18,20,0.45)",
+    boxShadow: `0 18px 0 -6px ${COLOR.navyShadow}`,
     duration: motionDuration(DURATION.pickup),
     ease: EASE.out,
     overwrite: "auto",
@@ -24,7 +24,7 @@ export function animateTileDrop(target: Target) {
     x: 0,
     y: 0,
     scale: 1,
-    boxShadow: "0 0 0 0 rgba(18,18,20,0)",
+    boxShadow: "0 0 0 0 rgba(28, 66, 134, 0)",
     duration: motionDuration(DURATION.drop),
     ease: EASE.out,
     overwrite: "auto",
@@ -38,7 +38,7 @@ export function animateTileReturn(target: Target, onComplete?: () => void) {
     x: 0,
     y: 0,
     scale: 1,
-    boxShadow: "0 0 0 0 rgba(18,18,20,0)",
+    boxShadow: "0 0 0 0 rgba(28, 66, 134, 0)",
     duration: motionDuration(DURATION.drop),
     ease: EASE.out,
     overwrite: "auto",

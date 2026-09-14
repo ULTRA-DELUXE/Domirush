@@ -1,5 +1,5 @@
 import { gsap } from "./gsap";
-import { EASE, motionDuration } from "./tokens";
+import { COLOR, EASE, motionDuration } from "./tokens";
 
 /**
  * Win celebration (§5.4): a light pulse runs the solved chain in order, Start to Target, so the
@@ -15,7 +15,7 @@ export function playWinChain(tileTargets: Element[], onComplete?: () => void) {
   }
 
   timeline.to(tileTargets, {
-    backgroundColor: "#7fd1ff",
+    backgroundColor: COLOR.gold,
     duration: motionDuration(0.16),
     ease: EASE.out,
     stagger: motionDuration(0.07),
@@ -24,7 +24,7 @@ export function playWinChain(tileTargets: Element[], onComplete?: () => void) {
   timeline.to(
     tileTargets,
     {
-      backgroundColor: "#edebe4",
+      backgroundColor: COLOR.cream,
       duration: motionDuration(0.3),
       ease: EASE.out,
       stagger: motionDuration(0.07),
