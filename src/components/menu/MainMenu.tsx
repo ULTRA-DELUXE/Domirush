@@ -6,10 +6,11 @@ import { playScreenEnter, useGSAP } from "@/lib/animations";
 import { getMode, listModes } from "@/lib/modes";
 import type { GameModeDefinition } from "@/lib/modes/types";
 import { getModeBest, readSettings, saveSettings } from "@/lib/persistence/localStore";
-import type { GameSettings, ModeBest } from "@/lib/persistence/types";
+import { DEFAULT_SETTINGS, type GameSettings, type ModeBest } from "@/lib/persistence/types";
 import { RANKS, formatDuration } from "@/lib/scoring";
 import { getPuzzlePosition } from "@/lib/session/sessionFlow";
 import { useSessionStore } from "@/lib/session/sessionStore";
+import { cn } from "@/lib/utils/cn";
 
 export function MainMenu() {
   const router = useRouter();
@@ -24,9 +25,10 @@ export function MainMenu() {
   const startError = useSessionStore((state) => state.startError);
 
   const [bests, setBests] = useState<Record<string, ModeBest | undefined>>({});
-  const [settings, setSettings] = useState<GameSettings | null>(null);
+  const [settings, setSettings] = useState<GameSettings>(DEFAULT_SETTINGS);
 
   const modes = listModes();
+  const showContinue = hydrated && session;
 
   useEffect(() => {
     hydrate();
@@ -53,104 +55,111 @@ export function MainMenu() {
   const updateSetting = (patch: Partial<GameSettings>) => setSettings(saveSettings(patch));
 
   return (
-    <main ref={rootRef} className="mx-auto flex min-h-dvh w-full max-w-5xl flex-col gap-10 p-6 lg:p-12">
-      <header className="menu-reveal">
-        <h1 className="font-display text-6xl leading-none lg:text-8xl">Domirush</h1>
-        <p className="mt-4 max-w-xl text-lg leading-relaxed opacity-90">
-          Bridge two points on an 8×8 grid with dominoes. Touching halves must match. Solve the
-          whole streak before the clock makes a fool of you.
-        </p>
-      </header>
-
-      {/* An interrupted run is never discarded silently — the player chooses (§9.1). */}
-      {hydrated && session && (
-        <section className="menu-reveal card p-6">
-          <h2 className="font-display text-2xl">Run in progress</h2>
-          <p className="mt-2 text-base">
-            {getMode(session.modeId)?.label ?? session.modeId} — puzzle{" "}
-            {getPuzzlePosition(session).position} of {getPuzzlePosition(session).total}
-          </p>
-          <div className="mt-5 flex flex-wrap gap-3">
-            <button
-              type="button"
-              className="btn"
-              onClick={() => router.push(`/play/${session.modeId}`)}
-            >
-              Continue run
-            </button>
-            <button type="button" className="btn" onClick={abandonSession}>
-              Abandon
-            </button>
+    <main ref={rootRef} className="frame-page menu-page">
+      <section
+        className={cn("menu-title-band menu-reveal", showContinue && "menu-title-band--split")}
+      >
+        <div className="menu-title-copy band-pad">
+          <p className="label opacity-55">01 / Menu</p>
+          <div>
+            <h1 className="display uppercase">Domirush</h1>
+            <p className="mt-3 max-w-xl text-sm leading-relaxed tracking-[0.04em] opacity-70">
+              Bridge two points on an 8×8 grid. Touching halves must match.
+            </p>
+            {startError && (
+              <p role="alert" className="kicker mt-3 text-navy">
+                <span className="inline-block border border-navy bg-gold px-3 py-1 text-navy">
+                  {startError}
+                </span>
+              </p>
+            )}
           </div>
-        </section>
-      )}
+        </div>
 
-      {startError && (
-        <p role="alert" className="menu-reveal card border-gold p-4 text-navy">
-          {startError}
-        </p>
-      )}
+        {showContinue && session && (
+          <aside className="menu-continue band-pad">
+            <p className="label opacity-55">Run in progress</p>
+            <div>
+              <h2 className="display-sm">Continue</h2>
+              <p className="mt-2 text-sm leading-relaxed">
+                {getMode(session.modeId)?.label ?? session.modeId} — puzzle{" "}
+                {getPuzzlePosition(session).position} of {getPuzzlePosition(session).total}
+              </p>
+              <div className="mt-4 flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  className="btn"
+                  onClick={() => router.push(`/play/${session.modeId}`)}
+                >
+                  Continue run
+                </button>
+                <button type="button" className="btn" onClick={abandonSession}>
+                  Abandon
+                </button>
+              </div>
+            </div>
+          </aside>
+        )}
+      </section>
 
-      <section className="menu-reveal grid gap-5 md:grid-cols-3">
-        {modes.map((mode) => {
+      <section className="menu-mode-band menu-reveal">
+        {modes.map((mode, index) => {
           const best = bests[mode.id];
           return (
-            <article key={mode.id} className="card flex flex-col justify-between gap-5 p-6">
-              <div>
-                <h2 className="font-display text-3xl leading-none">{mode.label}</h2>
+            <article key={mode.id} className="menu-mode-card band-pad">
+              <p className="label opacity-55">01.0{index + 1}</p>
+              <div className="min-h-0">
+                <h2 className="display-sm">{mode.label}</h2>
                 <p className="mt-3 text-sm leading-relaxed">{mode.description}</p>
               </div>
-
-              <dl className="text-sm">
-                <dt className="label opacity-70">Best</dt>
-                <dd className="text-lg">
-                  {best ? formatDuration(best.totalTimeMs) : "—"}
-                  {best?.rankId && (
-                    <span className="ml-2 text-sm opacity-70">{RANKS[best.rankId].name}</span>
-                  )}
-                </dd>
-              </dl>
-
-              <button
-                type="button"
-                className="btn"
-                disabled={isStarting}
-                onClick={() => start(mode)}
-              >
-                {isStarting ? "Generating…" : "Start run"}
-              </button>
+              <div className="menu-mode-cta">
+                <dl>
+                  <dt className="label opacity-55">Best</dt>
+                  <dd className="mt-1 text-lg">
+                    {best ? formatDuration(best.totalTimeMs) : "—"}
+                    {best?.rankId && (
+                      <span className="ml-2 text-sm opacity-70">{RANKS[best.rankId].name}</span>
+                    )}
+                  </dd>
+                </dl>
+                <button
+                  type="button"
+                  className="btn mt-4"
+                  disabled={isStarting}
+                  onClick={() => start(mode)}
+                >
+                  {isStarting ? "Generating…" : "Start run"}
+                </button>
+              </div>
             </article>
           );
         })}
       </section>
 
-      {settings && (
-        <section className="menu-reveal card p-6">
-          <h2 className="font-display text-2xl">Settings</h2>
-          <div className="mt-4 flex flex-col gap-4">
-            <label className="flex items-center gap-3 text-base">
+      <section className="menu-settings-band menu-reveal band-pad">
+        <p className="label shrink-0 opacity-55">Settings</p>
+        <div className="flex min-w-0 flex-1 flex-wrap items-center justify-end gap-x-8 gap-y-2">
+            <label className="flex items-center gap-3 text-sm">
               <input
                 type="checkbox"
-                className="h-5 w-5 accent-gold"
+                className="h-4 w-4 accent-gold"
                 checked={settings.autoCheck}
                 onChange={(event) => updateSetting({ autoCheck: event.target.checked })}
               />
-              Check the path automatically after every placement
+              Check path after every placement
             </label>
-
-            <label className="flex items-center gap-3 text-base">
-              <span className="label opacity-70">Name</span>
+            <label className="flex items-center gap-3 text-sm">
+              <span className="label opacity-55">Name</span>
               <input
                 type="text"
-                className="border-2 border-navy bg-transparent px-3 py-1"
+                className="border border-navy bg-transparent px-3 py-1"
                 value={settings.playerName}
-                maxLength={16}
+                maxLength={20}
                 onChange={(event) => updateSetting({ playerName: event.target.value })}
               />
             </label>
           </div>
-        </section>
-      )}
+      </section>
     </main>
   );
 }

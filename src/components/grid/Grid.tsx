@@ -30,7 +30,7 @@ export const Grid = forwardRef<HTMLDivElement, GridProps>(function Grid(
   return (
     <div
       ref={ref}
-      className="relative z-10 aspect-square w-full border-2 border-cream bg-navy"
+      className="relative z-10 h-full w-full border border-cream bg-navy"
     >
       <div className="absolute inset-0 grid grid-cols-8 grid-rows-8">
         {CELLS.map((cell) => (

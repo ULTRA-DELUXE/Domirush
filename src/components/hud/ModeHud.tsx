@@ -10,20 +10,41 @@ export interface ModeHudProps {
   total: number;
   getPuzzleMs: () => number;
   getTotalMs: () => number;
+  timersRunning: boolean;
+  onAbandon?: () => void;
 }
 
 /** Renders whatever the mode's `hud` config asks for — no mode-specific branching here (§7.1). */
-export function ModeHud({ mode, position, total, getPuzzleMs, getTotalMs }: ModeHudProps) {
+export function ModeHud({
+  mode,
+  position,
+  total,
+  getPuzzleMs,
+  getTotalMs,
+  timersRunning,
+  onAbandon,
+}: ModeHudProps) {
   return (
-    <header className="flex flex-wrap items-end justify-between gap-6 border-2 border-cream bg-cream/10 px-5 py-4">
-      <div className="flex flex-col gap-1">
-        <span className="label opacity-70">Mode</span>
-        <h1 className="font-display text-2xl leading-none">{mode.label}</h1>
+    <header className="mode-hud">
+      <div className="flex min-h-0 min-w-0 flex-col justify-between py-0.5">
+        <span className="label opacity-55">02 / Play</span>
+        <h1 className="font-display whitespace-nowrap text-[clamp(1.15rem,2vw,1.85rem)] leading-none tracking-[0.08em]">
+          {mode.label}
+        </h1>
       </div>
 
       {mode.hud.showProgress && <StreakProgress position={position} total={total} />}
-      {mode.hud.showPuzzleTimer && <Timer label="This puzzle" getMs={getPuzzleMs} />}
-      {mode.hud.showTotalTimer && <Timer label="Total" getMs={getTotalMs} emphasis />}
+      {mode.hud.showPuzzleTimer && (
+        <Timer label="Puzzle" getMs={getPuzzleMs} isRunning={timersRunning} />
+      )}
+      {mode.hud.showTotalTimer && (
+        <Timer label="Total" getMs={getTotalMs} isRunning={timersRunning} emphasis />
+      )}
+      {onAbandon && (
+        <button type="button" className="btn btn-ghost self-stretch" onClick={onAbandon}>
+          Abandon
+        </button>
+      )}
     </header>
   );
 }
