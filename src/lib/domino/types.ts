@@ -8,6 +8,9 @@ export interface Cell {
 /**
  * Placement model: 90° rotation, cell-exact halves (4 orientations).
  * Rotation is the clockwise angle from "half A left, half B right".
+ *
+ * Resolved vs the v0.7.0 proposal's 45°/8-way note: generator, solver, validator, and UI
+ * all use orthogonal adjacency only. Diagonal / king-move placement is not in this game.
  */
 export type Rotation = 0 | 90 | 180 | 270;
 

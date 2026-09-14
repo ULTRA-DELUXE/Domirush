@@ -7,6 +7,33 @@
  *   gold  #e2b540  — energy only (match, hint, hover, current)
  *
  * Sharp edges stay a hard rule. Opacity is the only extra lever — never a fourth hue.
+ *
+ * Proportion law (Ultra Deluxe ideas, not a copy):
+ *   Every macro band is a Fibonacci rational of the inner frame.
+ *   Padding is micro-spacing inside a band — it must not set the band's outer size.
+ *   3px outer stroke / 1px internal rules. No ad-hoc rem/px for HUD, stage, or tray.
+ *
+ *   Region              Fraction     Of
+ *   ──────────────────────────────────────────────
+ *   Outer stroke        3px          viewport edge
+ *   Frame inset         1/21         min(viewport)
+ *   Play HUD            1/8          inner height (full inner width)
+ *   Play stage          6/8          inner height
+ *   Play tray           1/8          inner height (full inner width)
+ *   Play stage cluster  min(inner W, stage H × 5/3)
+ *   Play board          3/5          stage cluster (square = stage H)
+ *   Play controls       2/5          stage cluster
+ *   Menu title          2/8          inner height
+ *   Menu modes          5/8          inner height
+ *   Menu settings       1/8          inner height
+ *   Mode columns        1/3 each     mode band
+ *   Results rank        3/8          inner height
+ *   Results body        5/8          inner height
+ *   Results stats       2/5          body (= 2/8 frame)
+ *   Results lower       3/5          body (= 3/8 frame)
+ *   Splits / board      3/5 · 2/5    lower band
+ *   Gate card           3/5          min(inner)
+ *   Timer card          2/13         play unit (min 7ch)
  */
 @theme {
   --color-navy: #1c4286;
@@ -22,6 +49,16 @@
 }
 
 @layer base {
+  :root {
+    --frame-stroke: 3px;
+    --frame-inset: min(calc(100dvw / 21), calc(100dvh / 21));
+    --inner-h: calc(100dvh - 2 * var(--frame-stroke) - 2 * var(--frame-inset));
+    --inner-w: calc(100dvw - 2 * var(--frame-stroke) - 2 * var(--frame-inset));
+    --play-stage-h: calc(var(--inner-h) * 6 / 8);
+    --play-unit-w: var(--inner-w);
+    --play-stage-w: min(var(--inner-w), calc(var(--play-stage-h) * 5 / 3));
+  }
+
   *,
   *::before,
   *::after {
@@ -30,14 +67,17 @@
 
   html {
     -webkit-text-size-adjust: 100%;
+    height: 100%;
+    overflow: hidden;
   }
 
   body {
+    height: 100%;
+    overflow: hidden;
     background-color: var(--color-navy);
     color: var(--color-cream);
     font-family: var(--font-body);
     font-variant-numeric: tabular-nums lining-nums;
-    /* The 8×8 board is dense; PC + tablet only (§10), so never rubber-band the layout. */
     overscroll-behavior: none;
   }
 
@@ -46,7 +86,7 @@
   h3 {
     font-family: var(--font-display);
     font-weight: 400;
-    letter-spacing: 0.01em;
+    letter-spacing: 0.08em;
   }
 
   :focus-visible {
@@ -56,11 +96,10 @@
 }
 
 @layer components {
-  /* Cream fill + navy outline: the only card recipe. */
   .card {
     background-color: var(--color-cream);
     color: var(--color-navy);
-    border: 2px solid var(--color-navy);
+    border: 1px solid var(--color-navy);
   }
 
   .btn {
@@ -68,13 +107,13 @@
     align-items: center;
     justify-content: center;
     gap: 0.5rem;
-    padding: 0.625rem 1.25rem;
+    padding: 0.5rem 1rem;
     background-color: var(--color-cream);
     color: var(--color-navy);
-    border: 2px solid var(--color-navy);
+    border: 1px solid var(--color-navy);
     font-family: var(--font-body);
-    font-size: 0.875rem;
-    letter-spacing: 0.14em;
+    font-size: 0.75rem;
+    letter-spacing: 0.18em;
     text-transform: uppercase;
     cursor: pointer;
     transition: background-color 120ms linear, color 120ms linear, border-color 120ms linear;
@@ -107,9 +146,404 @@
   }
 
   .label {
-    font-size: 0.6875rem;
-    letter-spacing: 0.2em;
+    font-size: 0.72rem;
+    letter-spacing: 0.35em;
     text-transform: uppercase;
+  }
+
+  .kicker {
+    font-size: 0.875rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    opacity: 0.6;
+  }
+
+  .display {
+    font-family: var(--font-display);
+    font-size: clamp(2.25rem, 4vw, 5rem);
+    letter-spacing: 0.08em;
+    line-height: 0.95;
+  }
+
+  .display-sm {
+    font-family: var(--font-display);
+    font-size: clamp(1.5rem, 2.5vw, 2.7rem);
+    letter-spacing: 0.08em;
+    line-height: 0.95;
+  }
+
+  .band-pad {
+    padding: 0.75rem 1rem;
+    box-sizing: border-box;
+  }
+
+  #app-root {
+    height: 100dvh;
+    min-height: 100svh;
+    overflow: hidden;
+    display: grid;
+    grid-template-rows: minmax(0, 1fr);
+    box-sizing: border-box;
+    border: var(--frame-stroke) solid var(--color-cream);
+  }
+
+  #app-root > * {
+    min-height: 0;
+    min-width: 0;
+  }
+
+  .frame-page {
+    height: 100%;
+    min-height: 0;
+    overflow: hidden;
+    box-sizing: border-box;
+    padding: var(--frame-inset);
+  }
+
+  .gate-screen {
+    display: grid;
+    place-items: center;
+    height: 100%;
+    min-height: 0;
+    overflow: hidden;
+    padding: var(--frame-inset);
+    box-sizing: border-box;
+    background-color: var(--color-navy);
+  }
+
+  .gate-card {
+    width: calc(min(var(--inner-w), var(--inner-h)) * 3 / 5);
+    max-width: 100%;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: calc(min(var(--inner-w), var(--inner-h)) * 2 / 5);
+    box-sizing: border-box;
+  }
+
+  .gate-card .band-pad {
+    padding: 1.25rem 1.5rem;
+  }
+
+  .timer-card {
+    width: max(7ch, calc(var(--play-unit-w) * 2 / 13));
+    flex-shrink: 0;
+    height: 100%;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 0.15rem;
+    padding: 0.35rem 0.6rem;
+    box-sizing: border-box;
+    border: 1px solid var(--color-cream);
+    background: color-mix(in srgb, var(--color-cream) 10%, transparent);
+    overflow: hidden;
+  }
+
+  .timer-card .label {
+    white-space: nowrap;
+  }
+
+  .timer-readout {
+    font-variant-numeric: tabular-nums;
+    display: inline-block;
+    min-width: 7ch;
+    text-align: right;
+    font-feature-settings: "tnum";
+  }
+
+  /* Play: HUD 1/8 and tray 1/8 span the frame; the stage is a 3/5–2/5 cluster
+     centered in 6/8 so the square grid stays the largest object. */
+  .play-shell {
+    height: 100%;
+    min-height: 0;
+    overflow: hidden;
+    display: grid;
+    grid-template-rows: calc(var(--inner-h) * 1 / 8) var(--play-stage-h) calc(var(--inner-h) * 1 / 8);
+    grid-template-columns: var(--play-unit-w);
+    justify-content: center;
+    align-content: start;
+    gap: 0;
+    padding: var(--frame-inset);
+    box-sizing: border-box;
+  }
+
+  .mode-hud {
+    min-width: 0;
+    min-height: 0;
+    overflow: hidden;
+    display: grid;
+    grid-template-columns: minmax(0, 3fr) auto auto auto auto;
+    align-items: stretch;
+    gap: calc(var(--play-unit-w) / 21);
+    border: 1px solid var(--color-cream);
+    background: color-mix(in srgb, var(--color-cream) 10%, transparent);
+    padding: 0.35rem 0.75rem;
+    box-sizing: border-box;
+  }
+
+  .play-stage {
+    min-height: 0;
+    min-width: 0;
+    width: var(--play-stage-w);
+    justify-self: center;
+    display: grid;
+    grid-template-columns: 3fr 2fr;
+    gap: 1px;
+    background: var(--color-cream);
+    border-left: 1px solid var(--color-cream);
+    border-right: 1px solid var(--color-cream);
+  }
+
+  .grid-board-slot {
+    min-width: 0;
+    min-height: 0;
+    display: grid;
+    place-items: center;
+    background: var(--color-navy);
+  }
+
+  .grid-board {
+    width: min(100%, var(--play-stage-h));
+    height: min(100%, var(--play-stage-h));
+    aspect-ratio: 1 / 1;
+    min-width: 0;
+    min-height: 0;
+  }
+
+  .play-controls {
+    min-width: 0;
+    min-height: 0;
+    overflow: auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    box-sizing: border-box;
+    background: color-mix(in srgb, var(--color-cream) 10%, var(--color-navy));
+  }
+
+  .domino-tray {
+    min-width: 0;
+    min-height: 0;
+    overflow: hidden;
+    display: grid;
+    grid-template-rows: 1fr 4fr;
+    border: 1px solid var(--color-cream);
+    background: color-mix(in srgb, var(--color-cream) 10%, transparent);
+    padding: 0.35rem 0.75rem 0.5rem;
+    box-sizing: border-box;
+  }
+
+  .domino-tray-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    min-height: 0;
+    color: var(--color-cream);
+  }
+
+  .domino-tray-tiles {
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: center;
+    gap: 0.5rem;
+    min-height: 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding-right: 0.25rem;
+  }
+
+  .tray-tile {
+    /* One board cell tall, two cells wide — tray pieces share the board's module. */
+    height: calc(var(--play-stage-h) / 8);
+    width: calc(var(--play-stage-h) * 2 / 8);
+    flex-shrink: 0;
+  }
+
+  /* Menu: title 2/8, modes 5/8, settings 1/8. */
+  .menu-page {
+    display: grid;
+    grid-template-rows: calc(var(--inner-h) * 2 / 8) calc(var(--inner-h) * 5 / 8) calc(var(--inner-h) * 1 / 8);
+    min-height: 0;
+  }
+
+  .menu-title-band {
+    min-height: 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    border: 1px solid var(--color-cream);
+    border-bottom: none;
+  }
+
+  .menu-title-band--split {
+    display: grid;
+    grid-template-columns: 3fr 2fr;
+  }
+
+  .menu-title-copy {
+    display: flex;
+    min-height: 0;
+    flex: 1;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  .menu-continue {
+    min-height: 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    border-left: 1px solid var(--color-cream);
+    background: var(--color-cream);
+    color: var(--color-navy);
+  }
+
+  .menu-mode-band {
+    min-height: 0;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-rows: minmax(0, 1fr);
+    gap: 1px;
+    background: var(--color-navy);
+    border: 1px solid var(--color-cream);
+  }
+
+  .menu-mode-card {
+    min-height: 0;
+    height: 100%;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    background: var(--color-cream);
+    color: var(--color-navy);
+    border: none;
+  }
+
+  .menu-mode-card .menu-mode-cta {
+    margin-top: auto;
+  }
+
+  .menu-settings-band {
+    min-height: 0;
+    overflow: hidden;
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+    border: 1px solid var(--color-cream);
+    border-top: none;
+    background: var(--color-cream);
+    color: var(--color-navy);
+  }
+
+  /* Results: rank 3/8, body 5/8. Body splits 2/5 stats + 3/5 lower (3/5 splits, 2/5 board). */
+  .results-page {
+    display: grid;
+    grid-template-rows: calc(var(--inner-h) * 3 / 8) calc(var(--inner-h) * 5 / 8);
+    min-height: 0;
+  }
+
+  .results-title-band {
+    min-height: 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    border: 1px solid var(--color-cream);
+    border-bottom: none;
+  }
+
+  .results-title-band--split {
+    display: grid;
+    grid-template-columns: 3fr 2fr;
+  }
+
+  .results-actions {
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    align-items: stretch;
+    border-left: 1px solid var(--color-cream);
+  }
+
+  .results-body {
+    min-height: 0;
+    display: grid;
+    grid-template-rows: 2fr 3fr;
+    border: 1px solid var(--color-cream);
+  }
+
+  .results-stats {
+    min-height: 0;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1px;
+    background: var(--color-navy);
+    border-bottom: 1px solid var(--color-cream);
+  }
+
+  .results-stat {
+    min-height: 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    background: var(--color-cream);
+    color: var(--color-navy);
+  }
+
+  .results-lower {
+    min-height: 0;
+    display: grid;
+    grid-template-columns: 3fr 2fr;
+    gap: 1px;
+    background: var(--color-navy);
+  }
+
+  .results-panel {
+    min-height: 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    background: var(--color-cream);
+    color: var(--color-navy);
+  }
+
+  .results-panel-body {
+    min-height: 0;
+    flex: 1;
+    overflow: auto;
+  }
+
+  .status-page {
+    display: grid;
+    grid-template-rows: calc(var(--inner-h) * 2 / 5) minmax(0, 1fr);
+    min-height: 0;
+  }
+
+  .status-title-band {
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    border: 1px solid var(--color-cream);
+    border-bottom: none;
+  }
+
+  .status-body-band {
+    min-height: 0;
+    overflow: hidden;
+    border: 1px solid var(--color-cream);
   }
 }
 

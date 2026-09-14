@@ -62,7 +62,7 @@ describe("session store lifecycle", () => {
     expect(useSessionStore.getState().session).toBeNull();
   });
 
-  it("records a personal best and a local leaderboard entry on finish", async () => {
+  it("records a personal best on finish without depending on the global board", async () => {
     const store = useSessionStore.getState();
     store.startSession("streak-5");
     for (let index = 0; index < 5; index += 1) {
@@ -70,11 +70,9 @@ describe("session store lifecycle", () => {
     }
     useSessionStore.getState().finishSession();
 
-    const { listLeaderboard } = await import("@/lib/persistence/leaderboard/service");
     const { getModeBest } = await import("@/lib/persistence/localStore");
 
     expect(getModeBest("streak-5")?.totalTimeMs).toBe(100_000);
-    await expect(listLeaderboard("streak-5")).resolves.toHaveLength(1);
   });
 
   it("resumes an interrupted run from sessionStorage", () => {

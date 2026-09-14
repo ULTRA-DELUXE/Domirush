@@ -10,8 +10,8 @@ import {
   useGSAP,
   playScreenEnter,
 } from "@/lib/animations";
-import { GRID_SIZE } from "@/lib/domino/geometry";
-import type { Cell } from "@/lib/domino/types";
+import { GRID_SIZE, rotateClockwise } from "@/lib/domino/geometry";
+import type { Cell, Rotation } from "@/lib/domino/types";
 import { buildOccupancy, checkPlacement, indexTiles } from "@/lib/domino/validator";
 import type { GameModeDefinition } from "@/lib/modes/types";
 import { readSettings } from "@/lib/persistence/localStore";
@@ -36,6 +36,8 @@ export function PlayShell({ mode, flow }: PlayShellProps) {
   const ghostRef = useRef<HTMLDivElement>(null);
   const shellRef = useRef<HTMLDivElement>(null);
   const draggingTileIdRef = useRef<string | null>(null);
+  const liveRotationRef = useRef<Rotation>(0);
+  const lastGhostPointRef = useRef<{ x: number; y: number } | null>(null);
 
   const puzzle = useGameStore((state) => state.puzzle);
   const placed = useGameStore((state) => state.placed);
@@ -78,6 +80,8 @@ export function PlayShell({ mode, flow }: PlayShellProps) {
       const ghost = ghostRef.current;
       if (!ghost) return;
 
+      lastGhostPointRef.current = point;
+
       const metrics = getBoardMetrics(boardRef.current);
       const cell = point ? cellFromPoint(boardRef.current, point.x, point.y) : null;
       const currentPuzzle = useGameStore.getState().puzzle;
@@ -88,12 +92,13 @@ export function PlayShell({ mode, flow }: PlayShellProps) {
       }
 
       const state = useGameStore.getState();
+      const rotation = liveRotationRef.current;
       const occupancy = buildOccupancy(state.placed, indexTiles(currentPuzzle.dominoSet));
       const check = checkPlacement(
         currentPuzzle,
         occupancy,
         cell,
-        state.selectionRotation,
+        rotation,
         draggingTileIdRef.current ?? undefined,
       );
 
@@ -101,7 +106,7 @@ export function PlayShell({ mode, flow }: PlayShellProps) {
         autoAlpha: 1,
         x: cell.col * metrics.cellSize,
         y: cell.row * metrics.cellSize,
-        rotation: state.selectionRotation,
+        rotation,
         borderColor: check.ok ? COLOR.gold : COLOR.cream,
         backgroundColor: check.ok ? COLOR.goldFill : COLOR.creamFill,
       });
@@ -111,6 +116,7 @@ export function PlayShell({ mode, flow }: PlayShellProps) {
 
   const handlePickup = useCallback((tileId: string) => {
     draggingTileIdRef.current = tileId;
+    liveRotationRef.current = useGameStore.getState().selectionRotation;
     useGameStore.getState().selectTile(tileId);
   }, []);
 
@@ -121,9 +127,12 @@ export function PlayShell({ mode, flow }: PlayShellProps) {
   const handleDrop = useCallback(
     (tileId: string, point: { x: number; y: number } | null) => {
       draggingTileIdRef.current = null;
+      lastGhostPointRef.current = null;
       updateGhost(null);
 
       const state = useGameStore.getState();
+      const rotation = liveRotationRef.current;
+      state.setSelectionRotation(rotation);
       const cell = point ? cellFromPoint(boardRef.current, point.x, point.y) : null;
 
       if (!cell) {
@@ -134,12 +143,31 @@ export function PlayShell({ mode, flow }: PlayShellProps) {
         return false;
       }
 
-      const placedOk = state.placeTile(tileId, cell, state.selectionRotation);
+      const placedOk = state.placeTile(tileId, cell, rotation);
       if (placedOk) runAutoCheck();
       return placedOk;
     },
     [runAutoCheck, updateGhost],
   );
+
+  const handleRotate = useCallback(() => {
+    if (useGameStore.getState().status !== "playing") return;
+
+    if (draggingTileIdRef.current) {
+      liveRotationRef.current = rotateClockwise(liveRotationRef.current);
+      const rotation = liveRotationRef.current;
+      if (ghostRef.current) gsap.set(ghostRef.current, { rotation });
+      const tile = document.querySelector<HTMLElement>(
+        `[data-tile-id="${draggingTileIdRef.current}"]`,
+      );
+      if (tile) gsap.set(tile, { rotation });
+      if (lastGhostPointRef.current) updateGhost(lastGhostPointRef.current);
+      return;
+    }
+
+    useGameStore.getState().rotateSelection();
+    liveRotationRef.current = useGameStore.getState().selectionRotation;
+  }, [updateGhost]);
 
   const handleActivate = useCallback((tileId: string) => {
     const state = useGameStore.getState();
@@ -167,7 +195,7 @@ export function PlayShell({ mode, flow }: PlayShellProps) {
         case "r":
         case "R":
           event.preventDefault();
-          state.rotateSelection();
+          handleRotate();
           break;
         case "ArrowUp":
           event.preventDefault();
@@ -216,7 +244,7 @@ export function PlayShell({ mode, flow }: PlayShellProps) {
 
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [runAutoCheck]);
+  }, [handleRotate, runAutoCheck]);
 
   // Win celebration retraces the solved chain Start → Target, then hands back to the session.
   useGSAP(
@@ -259,69 +287,74 @@ export function PlayShell({ mode, flow }: PlayShellProps) {
   const hintTile = hint ? tilesById.get(hint.tileId) : null;
 
   return (
-    <div ref={shellRef} className="mx-auto flex w-full max-w-6xl flex-col gap-6 p-4 lg:p-8">
+    <div ref={shellRef} className="play-shell">
       <ModeHud
         mode={mode}
         position={flow.position}
         total={flow.total}
         getPuzzleMs={getPuzzleMs}
         getTotalMs={getTotalMs}
+        timersRunning={status === "playing"}
+        onAbandon={flow.abandon}
       />
 
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_18rem]">
-        <div className="mx-auto w-full max-w-[36rem]">
-          <Grid ref={boardRef} puzzle={puzzle} cursor={cursor} onCellSelect={handleCellSelect}>
-            {placed.map((placement) => {
-              const tile = tilesById.get(placement.tileId);
-              if (!tile) return null;
-              return (
-                <DominoTile
-                  key={placement.tileId}
-                  tile={tile}
-                  rotation={placement.rotation}
-                  placement={placement}
-                  isSelected={selectedTileId === placement.tileId}
-                  isInChain={chainTileIds.has(placement.tileId)}
-                  onPickup={handlePickup}
-                  onDragMove={updateGhost}
-                  onDrop={handleDrop}
-                  onActivate={handleActivate}
-                />
-              );
-            })}
+      <div className="play-stage">
+        <div className="grid-board-slot">
+          <div className="grid-board">
+            <Grid ref={boardRef} puzzle={puzzle} cursor={cursor} onCellSelect={handleCellSelect}>
+              {placed.map((placement) => {
+                const tile = tilesById.get(placement.tileId);
+                if (!tile) return null;
+                return (
+                  <DominoTile
+                    key={placement.tileId}
+                    tile={tile}
+                    rotation={placement.rotation}
+                    placement={placement}
+                    isSelected={selectedTileId === placement.tileId}
+                    isInChain={chainTileIds.has(placement.tileId)}
+                    onPickup={handlePickup}
+                    onDragMove={updateGhost}
+                    onDrop={handleDrop}
+                    onActivate={handleActivate}
+                  />
+                );
+              })}
 
-            <ConnectionGlow junctions={derived.junctions} />
+              <ConnectionGlow junctions={derived.junctions} />
 
-            <div
-              ref={ghostRef}
-              className="ghost-tile pointer-events-none absolute left-0 top-0 border-2 opacity-0"
-              style={{
-                width: `${CELL_PERCENT * 2}%`,
-                height: `${CELL_PERCENT}%`,
-                transformOrigin: "25% 50%",
-              }}
-              aria-hidden="true"
-            />
-
-            {hint && (
               <div
-                className="pointer-events-none absolute border-2 border-dashed border-gold"
+                ref={ghostRef}
+                className="ghost-tile pointer-events-none absolute left-0 top-0 border-2 opacity-0"
                 style={{
-                  left: `${(hint.cellA.col / GRID_SIZE) * 100}%`,
-                  top: `${(hint.cellA.row / GRID_SIZE) * 100}%`,
                   width: `${CELL_PERCENT * 2}%`,
                   height: `${CELL_PERCENT}%`,
                   transformOrigin: "25% 50%",
-                  transform: `rotate(${hint.rotation}deg)`,
                 }}
                 aria-hidden="true"
               />
-            )}
-          </Grid>
+
+              {hint && (
+                <div
+                  className="pointer-events-none absolute border-2 border-dashed border-gold"
+                  style={{
+                    left: `${(hint.cellA.col / GRID_SIZE) * 100}%`,
+                    top: `${(hint.cellA.row / GRID_SIZE) * 100}%`,
+                    width: `${CELL_PERCENT * 2}%`,
+                    height: `${CELL_PERCENT}%`,
+                    transformOrigin: "25% 50%",
+                    transform: `rotate(${hint.rotation}deg)`,
+                  }}
+                  aria-hidden="true"
+                />
+              )}
+            </Grid>
+          </div>
         </div>
 
         <PlayControls
           mode={mode}
+          onRotate={handleRotate}
           onCheckPath={handleCheckPath}
           chainLength={derived.chain.tileIds.length}
           hintTileLabel={hintTile ? `${hintTile.a}·${hintTile.b}` : null}
@@ -344,46 +377,48 @@ export function PlayShell({ mode, flow }: PlayShellProps) {
 
 function PlayControls({
   mode,
+  onRotate,
   onCheckPath,
   chainLength,
   hintTileLabel,
 }: {
   mode: GameModeDefinition;
+  onRotate: () => void;
   onCheckPath: () => void;
   chainLength: number;
   hintTileLabel: string | null;
 }) {
-  const rotateSelection = useGameStore((state) => state.rotateSelection);
   const revealHint = useGameStore((state) => state.revealHint);
   const placedCount = useGameStore((state) => state.placed.length);
 
   return (
-    <aside className="flex flex-col gap-3 border-2 border-cream bg-cream/10 p-4">
-      <h2 className="label opacity-70">Controls</h2>
+    <aside className="play-controls">
+      <div className="flex flex-col gap-2">
+        <h2 className="label opacity-55">Controls</h2>
 
-      {/* On-screen rotate is the tablet equivalent of the physical R key (§10). */}
-      <button type="button" className="btn btn-ghost" onClick={rotateSelection}>
-        Rotate 90° (R)
-      </button>
-
-      <button type="button" className="btn btn-ghost" onClick={onCheckPath}>
-        Check path
-      </button>
-
-      {mode.hud.showHint && (
-        <button type="button" className="btn btn-ghost" onClick={() => revealHint()}>
-          {hintTileLabel ? `Hint: ${hintTileLabel}` : "Hint"}
+        <button type="button" className="btn btn-ghost" onClick={onRotate}>
+          Rotate 90° (R)
         </button>
-      )}
 
-      <p className="mt-2 text-sm leading-relaxed opacity-80">
-        Drag a tile onto the grid, or select it and place with Enter. Touching halves must show
-        the same number. Bridge Start to End to solve.
-      </p>
+        <button type="button" className="btn btn-ghost" onClick={onCheckPath}>
+          Check path
+        </button>
 
-      <p className="text-sm opacity-70">
-        Tiles placed: {placedCount} · chained from Start: {chainLength}
-      </p>
+        {mode.hud.showHint && (
+          <button type="button" className="btn btn-ghost" onClick={() => revealHint()}>
+            {hintTileLabel ? `Hint: ${hintTileLabel}` : "Hint"}
+          </button>
+        )}
+      </div>
+
+      <div>
+        <p className="text-sm leading-relaxed opacity-80">
+          Drag onto the grid, or select and press Enter. Touching halves must match.
+        </p>
+        <p className="mt-2 text-sm opacity-70">
+          Placed {placedCount} · chained {chainLength}
+        </p>
+      </div>
     </aside>
   );
 }

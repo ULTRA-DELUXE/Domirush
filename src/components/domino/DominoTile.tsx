@@ -123,7 +123,7 @@ export function DominoTile({
       }}
       className={cn(
         "block touch-none",
-        !onBoard && "h-12 w-24 shrink-0",
+        !onBoard && "tray-tile",
         isSelected && "ring-4 ring-navy",
         isHinted && "ring-4 ring-gold",
         disabled ? "cursor-default" : "cursor-grab active:cursor-grabbing",

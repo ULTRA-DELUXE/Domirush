@@ -1,24 +1,35 @@
 import type { LeaderboardEntry, LeaderboardProvider, LeaderboardSubmitPayload } from "./types";
 
-/**
- * STUB — not implemented for v0.7.0 (§6.4, §11 Phase 6). Documented here so a later pass is a
- * drop-in implementation rather than a refactor.
- *
- * Intended contract:
- *   Table `leaderboard_runs(id, player_name, mode_id, scope, total_time_ms, rank, created_at)`
- *   Route `/api/leaderboard` — GET top-N by (mode_id, scope), POST a completed run.
- *   No auth initially; anonymous name entry is enough.
- *
- * Supabase/Prisma are deliberately NOT dependencies until that work actually starts.
- */
+function asEntries(payload: unknown): LeaderboardEntry[] {
+  if (!payload || typeof payload !== "object") return [];
+  const entries = (payload as { entries?: unknown }).entries;
+  return Array.isArray(entries) ? (entries as LeaderboardEntry[]) : [];
+}
+
 export const remoteProvider: LeaderboardProvider = {
   id: "remote",
 
-  async listEntries(): Promise<LeaderboardEntry[]> {
-    throw new Error("Remote leaderboard is not implemented in v0.7.0.");
+  async listEntries(modeId, scope) {
+    try {
+      const params = new URLSearchParams({ modeId });
+      if (scope) params.set("scope", scope);
+      const res = await fetch(`/api/leaderboard?${params.toString()}`, { cache: "no-store" });
+      if (!res.ok) return [];
+      return asEntries(await res.json());
+    } catch {
+      return [];
+    }
   },
 
-  async submitEntry(_entry: LeaderboardSubmitPayload): Promise<void> {
-    throw new Error("Remote leaderboard is not implemented in v0.7.0.");
+  async submitEntry(entry: LeaderboardSubmitPayload) {
+    try {
+      await fetch("/api/leaderboard", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(entry),
+      });
+    } catch {
+      // Fire-and-forget: a failed submit must never block results or local bests.
+    }
   },
 };
